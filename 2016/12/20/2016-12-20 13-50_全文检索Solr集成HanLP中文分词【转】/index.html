@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"aiho.site","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="以前发布过HanLP的Lucene插件，后来很多人跟我说其实Solr更流行（反正我是觉得既然Solr是Lucene的子项目，那么稍微改改配置就能支持Solr），于是就抽空做了个Solr插件出来，开源在Github上，欢迎改进。 HanLP中文分词solr插件支持Solr5.x，兼容Lucene5.x。  快速上手   将hanlp-portable.jar和hanlp-solr-plugin.ja">
+<meta property="og:type" content="article">
+<meta property="og:title" content="全文检索Solr集成HanLP中文分词【转】">
+<meta property="og:url" content="http://aiho.site/2016/12/20/2016-12-20%2013-50_%E5%85%A8%E6%96%87%E6%A3%80%E7%B4%A2Solr%E9%9B%86%E6%88%90HanLP%E4%B8%AD%E6%96%87%E5%88%86%E8%AF%8D%E3%80%90%E8%BD%AC%E3%80%91/index.html">
+<meta property="og:site_name" content="aiho.site">
+<meta property="og:description" content="以前发布过HanLP的Lucene插件，后来很多人跟我说其实Solr更流行（反正我是觉得既然Solr是Lucene的子项目，那么稍微改改配置就能支持Solr），于是就抽空做了个Solr插件出来，开源在Github上，欢迎改进。 HanLP中文分词solr插件支持Solr5.x，兼容Lucene5.x。  快速上手   将hanlp-portable.jar和hanlp-solr-plugin.ja">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20161220135231448-1003250351.png">
+<meta property="og:image" content="http://static.oschina.net/uploads/img/201511/24114444_OERB.jpg">
+<meta property="og:image" content="http://static.oschina.net/uploads/img/201511/24114444_2X6t.jpg">
+<meta property="og:image" content="http://static.oschina.net/uploads/img/201511/24114444_fJcu.jpg">
+<meta property="og:image" content="http://static.oschina.net/uploads/img/201511/24114444_lCcv.jpg">
+<meta property="og:image" content="http://static.oschina.net/uploads/img/201511/24114444_2g1r.jpg">
+<meta property="og:image" content="http://static.oschina.net/uploads/img/201511/24114444_Wq7s.jpg">
+<meta property="article:published_time" content="2016-12-20T05:50:00.000Z">
+<meta property="article:modified_time" content="2020-05-27T16:08:11.612Z">
+<meta property="article:author" content="Li ChengHu">
+<meta property="article:tag" content="aiho|aiho.site|aiho���˲���">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20161220135231448-1003250351.png">
+
+<link rel="canonical" href="http://aiho.site/2016/12/20/2016-12-20%2013-50_%E5%85%A8%E6%96%87%E6%A3%80%E7%B4%A2Solr%E9%9B%86%E6%88%90HanLP%E4%B8%AD%E6%96%87%E5%88%86%E8%AF%8D%E3%80%90%E8%BD%AC%E3%80%91/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>全文检索Solr集成HanLP中文分词【转】 | aiho.site</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">aiho.site</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">aiho</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://aiho.site/2016/12/20/2016-12-20%2013-50_%E5%85%A8%E6%96%87%E6%A3%80%E7%B4%A2Solr%E9%9B%86%E6%88%90HanLP%E4%B8%AD%E6%96%87%E5%88%86%E8%AF%8D%E3%80%90%E8%BD%AC%E3%80%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Li ChengHu">
+      <meta itemprop="description" content="��ͨ��ֻ�뵽��ζȹ�ʱ�䣬�в��ܵ����跨����ʱ�䡣�����屾��">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="aiho.site">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          全文检索Solr集成HanLP中文分词【转】
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-20 13:50:00" itemprop="dateCreated datePublished" datetime="2016-12-20T13:50:00+08:00">2016-12-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-05-28 00:08:11" itemprop="dateModified" datetime="2020-05-28T00:08:11+08:00">2020-05-28</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>以前发布过<a href="https://github.com/hankcs/HanLP" target="_blank" rel="noopener">HanLP</a>的Lucene插件，后来很多人跟我说其实Solr更流行（反正我是觉得既然Solr是Lucene的子项目，那么稍微改改配置就能支持Solr），于是就抽空做了个Solr插件出来，开源在<a href="https://github.com/hankcs/hanlp-solr-plugin" target="_blank" rel="noopener">Github</a>上，欢迎改进。</p>
+<p>HanLP中文分词solr插件支持Solr5.x，兼容Lucene5.x。</p>
+<p><img src="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20161220135231448-1003250351.png" alt=""></p>
+<h2 id="快速上手"><a href="#快速上手" class="headerlink" title="快速上手"></a>快速上手</h2><ol>
+<li></li>
+</ol>
+<p>将<a href="http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.hankcs%22%20AND%20a%3A%22hanlp%22" target="_blank" rel="noopener">hanlp-portable.jar</a>和<a href="https://github.com/hankcs/hanlp-solr-plugin/releases" target="_blank" rel="noopener">hanlp-solr-plugin.jar</a>共两个jar放入<code>${webapp}/WEB-INF/lib</code>下</p>
+<ol start="2">
+<li></li>
+</ol>
+<p>修改solr core的配置文件<code>${core}/conf/schema.xml</code>：</p>
+<p><code class="hljs scala"><fieldType name=<span class="hljs-string">"text_cn" <span class="hljs-class"><span class="hljs-keyword">class=<span class="hljs-string">"solr.TextField">    <analyzer <span class="hljs-class"><span class="hljs-keyword">type=<span class="hljs-string">"index" enableIndexMode=<span class="hljs-string">"true" <span class="hljs-class"><span class="hljs-keyword">class=<span class="hljs-string">"com.hankcs.lucene.HanLPAnalyzer"/>    <analyzer <span class="hljs-class"><span class="hljs-keyword">type=<span class="hljs-string">"query" enableIndexMode=<span class="hljs-string">"true" <span class="hljs-class"><span class="hljs-keyword">class=<span class="hljs-string">"com.hankcs.lucene.HanLPAnalyzer"/></fieldType></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></p>
+<h2 id="效果一览"><a href="#效果一览" class="headerlink" title="效果一览"></a>效果一览</h2><p>对于新手来说，上面的两步可能太简略了，不如看看下面的step by step</p>
+<h3 id="启动solr"><a href="#启动solr" class="headerlink" title="启动solr"></a>启动solr</h3><p>首先在solr-5.2.1\bin目录下启动solr：</p>
+<p><code class="hljs bash">solr start <span class="hljs-_">-f</span></code></p>
+<p>用浏览器打开<a href="http://localhost:8983/solr/#/" target="_blank" rel="noopener">http://localhost:8983/solr/#/</a>，看到如下页面说明一切正常：</p>
+<p><img src="http://static.oschina.net/uploads/img/201511/24114444_OERB.jpg" alt="" title="solr启动.png"></p>
+<h3 id="创建core"><a href="#创建core" class="headerlink" title="创建core"></a>创建core</h3><p>在solr-5.2.1\server\solr下新建一个目录，取个名字比如叫one，将 示例配置文件solr-5.2.1\server\solr\configsets\sample_techproducts_configs\conf 拷贝过来，对conf目录下的schema.xml做上述一步改动，意思是使用HanLP分词器来对text_cn域进行分词。接着修改 schema.xml中的默认域type，搜索</p>
+<p><code class="hljs scala"><field name=<span class="hljs-string">"text" <span class="hljs-class"><span class="hljs-keyword">type=<span class="hljs-string">"text" indexed=<span class="hljs-string">"true" stored=<span class="hljs-string">"false" multiValued=<span class="hljs-string">"true"/></span></span></span></span></span></span></span></code></p>
+<p>修改为</p>
+<p><code class="hljs scala"><field name=<span class="hljs-string">"text" <span class="hljs-class"><span class="hljs-keyword">type=<span class="hljs-string">"text_cn" indexed=<span class="hljs-string">"true" stored=<span class="hljs-string">"false" multiValued=<span class="hljs-string">"true"/></span></span></span></span></span></span></span></code></p>
+<p>意思是默认文本为text_cn类型。</p>
+<p>完成了之后在solr的管理界面导入这个core one：</p>
+<p><img src="http://static.oschina.net/uploads/img/201511/24114444_2X6t.jpg" alt="" title="solr添加core.png"></p>
+<p>接着就能在下拉列表中看到这个core了：</p>
+<p><img src="http://static.oschina.net/uploads/img/201511/24114444_fJcu.jpg" alt="" title="选中core.png"></p>
+<h3 id="上传测试文档"><a href="#上传测试文档" class="headerlink" title="上传测试文档"></a>上传测试文档</h3><p>修改好了，就可以拿一些测试文档来试试效果了。hanlp-solr-plugin代码库中的src/test/resources下有个测试文档集合documents.csv，其内容如下：</p>
+<p><code class="hljs objectivec"><span class="hljs-keyword">id,title1,你好世界<span class="hljs-number">2,商品和服务<span class="hljs-number">3,和服的价格是每镑<span class="hljs-number">15便士<span class="hljs-number">4,服务大众<span class="hljs-number">5,hanlp工作正常</span></span></span></span></span></span></code></p>
+<p>代表着id从1到5共五个文档，接下来复制solr-5.2.1\example\exampledocs下的上传工具post.jar到resources目录，利用如下命令行将数据导入：</p>
+<p><code class="hljs nginx"><span class="hljs-attribute">java -Dc=one -Dtype=application/csv -jar post.jar <span class="hljs-regexp">*.csv</span></span></code></p>
+<p>Windows用户的话直接双击该目录下的upload.cmd即可。</p>
+<p>正常情况下输出如下结果：</p>
+<p><code class="hljs sql">SimplePostTool version 5.0.0Posting files to [base] url <a href="http://localhost:8983/solr/one/" target="_blank" rel="noopener">http://localhost:8983/solr/one/</a><span class="hljs-keyword">update <span class="hljs-keyword">using <span class="hljs-keyword">content-<span class="hljs-keyword">type application/csv...POSTing <span class="hljs-keyword">file documents.csv <span class="hljs-keyword">to [base]<span class="hljs-number">1 files indexed.COMMITting Solr <span class="hljs-keyword">index changes <span class="hljs-keyword">to <span class="hljs-keyword"><a href="http://localhost" target="_blank" rel="noopener">http://localhost</a>:<span class="hljs-number">8983/solr/one/update...Time spent: <span class="hljs-number">0:<span class="hljs-number">00:<span class="hljs-number">00.059请按任意键继续. . .</span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></p>
+<p>同时刷新一下core one的Overview，的确看到了5篇文档：</p>
+<p><img src="http://static.oschina.net/uploads/img/201511/24114444_lCcv.jpg" alt="" title="solr文档导入成功.png"></p>
+<h3 id="搜索文档"><a href="#搜索文档" class="headerlink" title="搜索文档"></a>搜索文档</h3><p>是时候看看HanLP分词的效果了，点击左侧面板的Query，输入“和服”试试：</p>
+<p><img src="http://static.oschina.net/uploads/img/201511/24114444_2g1r.jpg" alt="" title="solr中文搜索.png"></p>
+<p>发现精确地查到了“<strong>和服</strong>的价格是每镑15便士”，而不是“商品<strong>和服</strong>务”这种错误文档：</p>
+<p><img src="http://static.oschina.net/uploads/img/201511/24114444_Wq7s.jpg" alt="" title="精确命中.png"></p>
+<p>这说明HanLP工作良好。</p>
+<p>要知道，不少中文分词器眉毛胡子一把抓地命中“商品<strong>和服</strong>务”这种错误文档，降低了查准率，拉低了用户体验，跟原始的MySQL LIKE有何区别？</p>
+<h2 id="代码调用"><a href="#代码调用" class="headerlink" title="代码调用"></a>代码调用</h2><p>在Query改写的时候，可以利用HanLPAnalyzer分词结果中的词性等属性，如</p>
+<p><code class="hljs ruby">String text = <span class="hljs-string">"中华人民共和国很辽阔";<span class="hljs-keyword">for (int i = <span class="hljs-number">0; i < text.length(); ++i){    System.out.print(text.charAt(i) + <span class="hljs-string">"" + i + <span class="hljs-string">" ");}System.out.println();Analyzer analyzer = new HanLPAnalyzer();TokenStream tokenStream = analyzer.tokenStream(<span class="hljs-string">"field", text);tokenStream.reset();<span class="hljs-keyword">while (tokenStream.incrementToken()){    CharTermAttribute attribute = tokenStream.getAttribute(CharTermAttribute.<span class="hljs-keyword">class);    <span class="hljs-regexp">// 偏移量    OffsetAttribute offsetAtt = tokenStream.getAttribute(OffsetAttribute.<span class="hljs-keyword">class);    <span class="hljs-regexp">// 距离    PositionIncrementAttribute positionAttr = kenStream.getAttribute(PositionIncrementAttribute.<span class="hljs-keyword">class);    <span class="hljs-regexp">// 词性    TypeAttribute typeAttr = tokenStream.getAttribute(TypeAttribute.<span class="hljs-keyword">class);    System.out.printf(<span class="hljs-string">"[%d:%d %d] %s/%s\n", offsetAtt.startOffset(), offsetAtt.endOffset(), positionAttr.getPositionIncrement(), attribute, typeAttr.type());}</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></code></p>
+<p>在另一些场景，支持以自定义的分词器（比如开启了命名实体识别的分词器、繁体中文分词器、CRF分词器等）构造HanLPTokenizer，比如：</p>
+<p><code class="hljs lisp">tokenizer = new HanLPTokenizer(<span class="hljs-name">HanLP.newSegment()                    .enableJapaneseNameRecognize(<span class="hljs-name">true)                    .enableIndexMode(<span class="hljs-name">true), null, false)<span class="hljs-comment">;tokenizer.setReader(new StringReader("林志玲亮相网友:确定不是波多野结衣？"));...</span></span></span></span></code></p>
+<h2 id="高级配置"><a href="#高级配置" class="headerlink" title="高级配置"></a>高级配置</h2><p>HanLP分词器主要通过class path下的<code>hanlp.properties</code>进行配置，请阅读<a href="https://github.com/hankcs/HanLP" target="_blank" rel="noopener">HanLP自然语言处理包文档</a>以了解更多相关配置，如：</p>
+<ol>
+<li></li>
+</ol>
+<p>停用词</p>
+<ol start="2">
+<li></li>
+</ol>
+<p>用户词典</p>
+<ol start="3">
+<li></li>
+</ol>
+<p>词性标注</p>
+<ol start="4">
+<li></li>
+</ol>
+<p>……</p>
+<p><em>原文地址：<a href="http://www.hankcs.com/nlp/segment/full-text-retrieval-solr-integrated-hanlp-chinese-word-segmentation.html" target="_blank" rel="noopener">http://www.hankcs.com/nlp/segment/full-text-retrieval-solr-integrated-hanlp-chinese-word-segmentation.html</a></em></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/12/07/2016-12-07%2012-23_js%20%E5%AE%9E%E7%8E%B0%20input%20file%20%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/" rel="prev" title="js 实现 input file 文件上传">
+      <i class="fa fa-chevron-left"></i> js 实现 input file 文件上传
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/12/27/2016-12-27%2011-30_4.0%E4%B8%AD%E7%9A%84%E5%B9%B6%E8%A1%8C%E8%AE%A1%E7%AE%97%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B%E8%AF%A6%E8%A7%A3(%E4%B8%80)%E3%80%90%E8%BD%AC%E3%80%91/" rel="next" title="4.0中的并行计算和多线程详解(一)【转】">
+      4.0中的并行计算和多线程详解(一)【转】 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#快速上手"><span class="nav-number">1.</span> <span class="nav-text">快速上手</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#效果一览"><span class="nav-number">2.</span> <span class="nav-text">效果一览</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#启动solr"><span class="nav-number">2.1.</span> <span class="nav-text">启动solr</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建core"><span class="nav-number">2.2.</span> <span class="nav-text">创建core</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#上传测试文档"><span class="nav-number">2.3.</span> <span class="nav-text">上传测试文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#搜索文档"><span class="nav-number">2.4.</span> <span class="nav-text">搜索文档</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代码调用"><span class="nav-number">3.</span> <span class="nav-text">代码调用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#高级配置"><span class="nav-number">4.</span> <span class="nav-text">高级配置</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Li ChengHu</p>
+  <div class="site-description" itemprop="description">��ͨ��ֻ�뵽��ζȹ�ʱ�䣬�в��ܵ����跨����ʱ�䡣�����屾��</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">35</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/q111211" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;q111211" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yourname@gmail.com" title="E-Mail → mailto:yourname@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/yourname" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;yourname" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.cnblogs.com/chenghu/" title="CNBlogs → https:&#x2F;&#x2F;www.cnblogs.com&#x2F;chenghu&#x2F;" rel="noopener" target="_blank"><i class="fab fa-cnBlogs fa-fw"></i>CNBlogs</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Li ChengHu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

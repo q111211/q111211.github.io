@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"aiho.site","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="【摘要】 当Excel中公式引用了外部数据，每次打开时，总是自动弹出自动更新链接的对话框。如何找到这些链接？有没有办法实现断开原有链接，而保持数值不变？ 有客户反应，当Excel无法链接到外部数据后，还是弹出自动更新的对话框，有时候找到这些链接，但就是无法删除，怎么办？ 【正文】 一.断开外部链接，保持数值不变 当打开带有外部链接的文档时，Excel自动弹出更新对话框，如图所示，现在不希望数据自动">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Excel中外部数据链接无法删除的解决方法【转】">
+<meta property="og:url" content="http://aiho.site/2018/01/09/2018-01-09%2009-39_Excel%E4%B8%AD%E5%A4%96%E9%83%A8%E6%95%B0%E6%8D%AE%E9%93%BE%E6%8E%A5%E6%97%A0%E6%B3%95%E5%88%A0%E9%99%A4%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95%E3%80%90%E8%BD%AC%E3%80%91/index.html">
+<meta property="og:site_name" content="aiho.site">
+<meta property="og:description" content="【摘要】 当Excel中公式引用了外部数据，每次打开时，总是自动弹出自动更新链接的对话框。如何找到这些链接？有没有办法实现断开原有链接，而保持数值不变？ 有客户反应，当Excel无法链接到外部数据后，还是弹出自动更新的对话框，有时候找到这些链接，但就是无法删除，怎么办？ 【正文】 一.断开外部链接，保持数值不变 当打开带有外部链接的文档时，Excel自动弹出更新对话框，如图所示，现在不希望数据自动">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093539363-200672317.png">
+<meta property="og:image" content="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093559926-716232353.png">
+<meta property="og:image" content="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093616801-894455968.png">
+<meta property="og:image" content="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093631301-1664293234.png">
+<meta property="og:image" content="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093717097-846751699.png">
+<meta property="og:image" content="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093745691-1046023737.png">
+<meta property="og:image" content="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093802332-840276531.png">
+<meta property="og:image" content="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093818113-932869474.png">
+<meta property="og:image" content="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093824863-2103906447.png">
+<meta property="og:image" content="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093842691-408714408.png">
+<meta property="article:published_time" content="2018-01-09T01:39:00.000Z">
+<meta property="article:modified_time" content="2020-05-27T16:08:09.544Z">
+<meta property="article:author" content="Li ChengHu">
+<meta property="article:tag" content="aiho|aiho.site|aiho���˲���">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093539363-200672317.png">
+
+<link rel="canonical" href="http://aiho.site/2018/01/09/2018-01-09%2009-39_Excel%E4%B8%AD%E5%A4%96%E9%83%A8%E6%95%B0%E6%8D%AE%E9%93%BE%E6%8E%A5%E6%97%A0%E6%B3%95%E5%88%A0%E9%99%A4%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95%E3%80%90%E8%BD%AC%E3%80%91/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Excel中外部数据链接无法删除的解决方法【转】 | aiho.site</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">aiho.site</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">aiho</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://aiho.site/2018/01/09/2018-01-09%2009-39_Excel%E4%B8%AD%E5%A4%96%E9%83%A8%E6%95%B0%E6%8D%AE%E9%93%BE%E6%8E%A5%E6%97%A0%E6%B3%95%E5%88%A0%E9%99%A4%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95%E3%80%90%E8%BD%AC%E3%80%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Li ChengHu">
+      <meta itemprop="description" content="��ͨ��ֻ�뵽��ζȹ�ʱ�䣬�в��ܵ����跨����ʱ�䡣�����屾��">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="aiho.site">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Excel中外部数据链接无法删除的解决方法【转】
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-01-09 09:39:00" itemprop="dateCreated datePublished" datetime="2018-01-09T09:39:00+08:00">2018-01-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-05-28 00:08:09" itemprop="dateModified" datetime="2020-05-28T00:08:09+08:00">2020-05-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%85%B6%E4%BB%96/" itemprop="url" rel="index"><span itemprop="name">其他</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><strong>【摘要】</strong></p>
+<p>当Excel中公式引用了外部数据，每次打开时，总是自动弹出自动更新链接的对话框。如何找到这些链接？有没有办法实现断开原有链接，而保持数值不变？</p>
+<p>有客户反应，当Excel无法链接到外部数据后，还是弹出自动更新的对话框，有时候找到这些链接，但就是无法删除，怎么办？</p>
+<p><strong>【正文】</strong></p>
+<p>一.断开外部链接，保持数值不变</p>
+<p>当打开带有外部链接的文档时，Excel自动弹出更新对话框，如图所示，现在不希望数据自动更新，除了每次都单击“不更新”外，有没有一劳永逸的方法？比如删除外部链接，保留现有数值？</p>
+<p><img src="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093539363-200672317.png" alt=""></p>
+<p>这个梦想可以实现，首先我们要先找到链接在哪里。单击【数据】菜单下【编辑链接】的命令，打开编辑链接对话框。</p>
+<p><img src="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093559926-716232353.png" alt=""></p>
+<p>选中列表中的链接，然后单击“断开链接”即可。</p>
+<p><img src="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093616801-894455968.png" alt=""></p>
+<p>我们可以看到，之前的链接就变成数字了。</p>
+<p><img src="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093631301-1664293234.png" alt="">)<img src="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093717097-846751699.png" alt=""></p>
+<p>断开链接前                                                                                  断开链接后</p>
+<p>二.Excel无法链接到外部数据，同时也无法“断开链接”怎么办？</p>
+<p>经常有客户遇到这种情况，当单击“更新”按钮时，电脑会弹出无法更新的对话框。</p>
+<p><img src="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093745691-1046023737.png" alt=""></p>
+<p>如果单击【编辑链接】，在弹出的对话框中选中链接，单击【断开链接】，在弹出的警告框中继续选中【断开链接】，但该链接依然存在，无论如何也无法断开，怎么办？</p>
+<p><img src="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093802332-840276531.png" alt=""></p>
+<p>每次打开这个文件，总要弹出提醒对话框，每次都要选择【不更新】，烦不胜烦，有没有办法避免这种情况？</p>
+<p>有一个方法防止弹出对话框，在【编辑链接】中选择【启动提示】，然后选择“不显示该警告，同时也不更新自动链接”。从此就再没有更新对话框的提醒了，世界瞬间清静了。</p>
+<p><img src="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093818113-932869474.png" alt=""></p>
+<p><img src="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093824863-2103906447.png" alt=""></p>
+<p>但这种做法治标不治本，其实链接还是存在的，只是人们不知情而已，如何彻底删除链接？有两种方法可以尝试一下。</p>
+<p>【方法一】删除命名法</p>
+<p>如果链接使用了已定义名称（名称：代表单元格、单元格区域、公式或常量值的单词或字符串。名称更易于理解，例如，“产品”可以引用难于理解的区域“Sales!C20:C30”。），那么该名称不会自动删除，您可能还要先删除该名称。</p>
+<p>单击【公式】-【名称管理器】，选中名称后，单击【删除】即可。</p>
+<p><img src="http://7xqdjc.com1.z0.glb.clouddn.com/blog_338023-20180109093842691-408714408.png" alt=""></p>
+<p>然后再去【数据】菜单下【编辑链接】，重新删除一次试试，大部分链接可以删除了。</p>
+<p>【方法二】更改格式法</p>
+<p>有些链接不是因为命名引起的，所以删除命名后，可能还是无法删除链接，那么试试第二种方法，更改格式法。</p>
+<p>很简单，将文档从2007版的【.xlsx】另存为2003版的【.xls】，最好把文件名也更新一下，关闭文档，重新打开，你会惊喜的发现，【编辑链接】自动变成灰色了，说明文档已经没有链接，此时再将文档转换会2007版即可。 </p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/12/29/2017-12-29%2015-42_ASP.NET%E5%AE%9E%E7%8E%B0%E8%BF%9B%E5%BA%A6%E6%9D%A1%E6%95%88%E6%9E%9C%E3%80%90%E8%BD%AC%E3%80%91/" rel="prev" title="ASP.NET实现进度条效果【转】">
+      <i class="fa fa-chevron-left"></i> ASP.NET实现进度条效果【转】
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/03/15/2018-03-15%2009-04_Java%20Axis2%20webservice/" rel="next" title="Java Axis2 webservice">
+      Java Axis2 webservice <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Li ChengHu</p>
+  <div class="site-description" itemprop="description">��ͨ��ֻ�뵽��ζȹ�ʱ�䣬�в��ܵ����跨����ʱ�䡣�����屾��</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">35</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/q111211" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;q111211" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yourname@gmail.com" title="E-Mail → mailto:yourname@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/yourname" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;yourname" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.cnblogs.com/chenghu/" title="CNBlogs → https:&#x2F;&#x2F;www.cnblogs.com&#x2F;chenghu&#x2F;" rel="noopener" target="_blank"><i class="fab fa-cnBlogs fa-fw"></i>CNBlogs</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Li ChengHu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
